@@ -6,14 +6,15 @@ services:
     restart: unless-stopped
     volumes:
       - php_socket:/var/run/php
+      - app_public:/srv/app/public
     healthcheck:
       interval: 10s
       timeout: 3s
       retries: 3
       start_period: 30s
     depends_on:
-        database:
-            condition: service_healthy
+      database:
+        condition: service_healthy
     environment:
       APP_ENV: prod
       APP_SECRET: ${APP_SECRET}
@@ -45,6 +46,7 @@ services:
     restart: unless-stopped
     volumes:
       - php_socket:/var/run/php
+      - app_public:/srv/app/public
       - caddy_data:/data
       - caddy_config:/config
     ports:
@@ -64,8 +66,8 @@ services:
   tools-service:
     image: koalati/tools-service
     depends_on:
-        database:
-            condition: service_healthy
+      database:
+        condition: service_healthy
     environment:
       PORT: 3000
       MOCK_API: 0
@@ -80,7 +82,7 @@ services:
       DATABASE_REJECT_UNAUTHORIZED: ${TOOLS_API_DATABASE_REJECT_UNAUTHORIZED}
     restart: unless-stopped
     ports:
-    - 3000:3000
+      - 3000:3000
 
   redis:
     image: "redis:alpine"
@@ -95,11 +97,11 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     cap_add:
-      - SYS_NICE  # CAP_SYS_NICE
+      - SYS_NICE # CAP_SYS_NICE
     volumes:
       - db-data:/var/lib/mysql:rw
     healthcheck: # @TODO: Figure out a more accurate "ready" check
-      test: "mysql -h localhost -u $$MYSQL_USER --password=$$MYSQL_PASSWORD -X --execute \"SHOW DATABASES;\" | grep \">$$MYSQL_DATABASE<\""
+      test: 'mysql -h localhost -u $$MYSQL_USER --password=$$MYSQL_PASSWORD -X --execute "SHOW DATABASES;" | grep ">$$MYSQL_DATABASE<"'
       interval: 3s
       timeout: 3s
       retries: 10
@@ -112,6 +114,7 @@ services:
 
 volumes:
   php_socket:
+  app_public:
   caddy_data:
   caddy_config:
   db-data:
